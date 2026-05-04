@@ -2,6 +2,8 @@
 
 Self-hosted bug bounty & responsible disclosure platform.
 
+![Dashboard Preview](assets/dashboard.webp)
+
 ## Features
 
 - **Program Management** — Create and manage bug bounty programs with scope, rewards, and rules
@@ -11,6 +13,18 @@ Self-hosted bug bounty & responsible disclosure platform.
 - **Notification System** — Real-time notifications for status changes, rewards, and certificates
 - **Leaderboard** — Public researcher rankings by reputation and valid reports
 - **Whitelabel** — Fully configurable platform name, branding, and certificate design from admin settings
+
+## Screenshots
+
+<p align="center">
+  <img src="assets/programs.webp" width="45%" />
+  <img src="assets/submissions.webp" width="45%" />
+</p>
+
+<p align="center">
+  <img src="assets/settings.webp" width="90%" />
+</p>
+
 
 ## Tech Stack
 

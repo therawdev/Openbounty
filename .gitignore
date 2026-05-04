@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Uploads (user-generated)
+uploads/*
+!uploads/.gitkeep
+
+# Landing page (separate repo)
+landing/
+
+# Legacy project folder
+project/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

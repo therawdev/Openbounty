@@ -470,12 +470,15 @@ app.get('/api/leaderboard', (req, res) => {
 
 // ─── Payouts ─────────────────────────────────────
 app.get('/api/payouts', (req, res) => {
-  const payouts = db.prepare(`
-    SELECT py.*, s.ref as submission_ref, s.title as submission_title, r.handle as researcher_handle, r.avatar_color
-    FROM payouts py LEFT JOIN submissions s ON py.submission_id=s.id LEFT JOIN researchers r ON py.researcher_id=r.id
-    ORDER BY py.created_at DESC
-  `).all();
-  res.json(payouts);
+  const session = getSession(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+  const base = `SELECT py.*, s.ref as submission_ref, s.title as submission_title, r.handle as researcher_handle, r.avatar_color
+    FROM payouts py LEFT JOIN submissions s ON py.submission_id=s.id LEFT JOIN researchers r ON py.researcher_id=r.id`;
+  if (session.role === 'admin') {
+    return res.json(db.prepare(`${base} ORDER BY py.created_at DESC`).all());
+  }
+  // Researchers see only their own payout records
+  res.json(db.prepare(`${base} WHERE py.researcher_id=? ORDER BY py.created_at DESC`).all(session.researcher_id));
 });
 
 app.post('/api/payouts', (req, res) => {

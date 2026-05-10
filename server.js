@@ -228,6 +228,8 @@ app.get('/api/programs/:id', (req, res) => {
 });
 
 app.put('/api/programs/:id', (req, res) => {
+  const session = getSession(req);
+  if (session?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const { name, description, scope_in, scope_out, reward_low, reward_high, reward_crit, reward_med, reward_info, status, policy, response_sla_hours, offers_bounty, offers_certificate } = req.body;
   const sets = []; const vals = [];
   if (name !== undefined) { sets.push('name=?'); vals.push(name); }

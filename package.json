@@ -1,6 +1,6 @@
 {
-  "name": "sechub-bounty",
-  "version": "1.0.0",
+  "name": "openbounty",
+  "version": "1.0.0-beta.1",
   "description": "Responsible Disclosure & Bug Bounty Platform",
   "main": "server.js",
   "scripts": {

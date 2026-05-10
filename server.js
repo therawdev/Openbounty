@@ -545,8 +545,7 @@ app.post('/api/certificates', (req, res) => {
   if (!sub) return res.status(404).json({ error: 'Submission not found' });
   const existing = db.prepare('SELECT id FROM certificates WHERE submission_id=?').get(submission_id);
   if (existing) return res.status(409).json({ error: 'Certificate already exists' });
-  const count = db.prepare('SELECT COUNT(*) as c FROM certificates').get().c;
-  const certRef = `CERT-2026-${String(count + 1).padStart(3, '0')}`;
+  const certRef = `CERT-${new Date().getFullYear()}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
   db.prepare('INSERT INTO certificates (cert_ref,submission_id,researcher_id,program_id,researcher_name,researcher_handle,program_name,vulnerability_title,severity) VALUES (?,?,?,?,?,?,?,?,?)').run(
     certRef, submission_id, sub.researcher_id, sub.program_id, sub.researcher_name, sub.researcher_handle, sub.program_name, sub.title, sub.severity
   );

@@ -334,15 +334,17 @@ app.put('/api/submissions/:id', (req, res) => {
 });
 
 app.post('/api/submissions', (req, res) => {
+  const session = getSession(req);
+  if (!session || session.role !== 'researcher' || !session.researcher_id) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   upload.array('files', 5)(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
-    
-    const { title, description, severity, cvss, cwe, program_id, researcher_id, asset, impact, repro_steps, fix_suggestion } = req.body;
+    const { title, description, severity, cvss, cwe, program_id, asset, impact, repro_steps, fix_suggestion } = req.body;
+    const researcher_id = session.researcher_id;
     const count = db.prepare('SELECT COUNT(*) as c FROM submissions').get().c;
     const ref = `VD-2026-${String(count + 1).padStart(3, '0')}`;
-    
     const filePaths = (req.files || []).map(f => `/uploads/${f.filename}`);
-
     const r = db.prepare('INSERT INTO submissions (ref,title,description,severity,cvss,cwe,program_id,researcher_id,asset,impact,repro_steps,fix_suggestion,files) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
       ref, title, description, severity || 'medium', cvss || null, cwe || null, program_id, researcher_id, asset || '', impact || '', repro_steps || '', fix_suggestion || '', JSON.stringify(filePaths)
     );

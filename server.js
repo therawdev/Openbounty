@@ -589,6 +589,11 @@ app.put('/api/notifications/:id/read', (req, res) => {
 });
 
 app.get('/api/researchers/:id/certificates', (req, res) => {
+  const session = getSession(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+  if (session.role !== 'admin' && session.researcher_id !== parseInt(req.params.id)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   res.json(db.prepare('SELECT * FROM certificates WHERE researcher_id=? ORDER BY issued_at DESC').all(req.params.id));
 });
 

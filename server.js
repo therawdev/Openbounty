@@ -419,7 +419,12 @@ app.post('/api/submissions/:id/comments', (req, res) => {
 
 // ─── Researchers ─────────────────────────────────
 app.get('/api/researchers', (req, res) => {
-  res.json(db.prepare('SELECT id,handle,name,email,avatar_color,bio,website,reputation,total_earned,reports_submitted,reports_valid,joined_at,status FROM researchers ORDER BY reputation DESC').all());
+  const session = getSession(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
+  const cols = session.role === 'admin'
+    ? 'id,handle,name,email,avatar_color,bio,website,reputation,total_earned,reports_submitted,reports_valid,joined_at,status'
+    : 'id,handle,name,avatar_color,bio,website,reputation,total_earned,reports_submitted,reports_valid,joined_at,status';
+  res.json(db.prepare(`SELECT ${cols} FROM researchers ORDER BY reputation DESC`).all());
 });
 
 app.put('/api/researchers/:id', (req, res) => {

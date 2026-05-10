@@ -523,6 +523,8 @@ app.get('/api/certificates/:ref', (req, res) => {
 });
 
 app.post('/api/certificates', (req, res) => {
+  const session = getSession(req);
+  if (session?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const { submission_id } = req.body;
   const sub = db.prepare(`SELECT s.*, p.name as program_name, r.name as researcher_name, r.handle as researcher_handle
     FROM submissions s LEFT JOIN programs p ON s.program_id=p.id LEFT JOIN researchers r ON s.researcher_id=r.id WHERE s.id=?`).get(submission_id);

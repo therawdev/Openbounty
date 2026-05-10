@@ -10,7 +10,10 @@ const { seedDB, hashPw } = require('./db/seed');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || `http://localhost:${process.env.PORT || 3000}`,
+  credentials: true,
+}));
 app.use(express.json());
 app.use('/landing', express.static(path.join(__dirname, 'landing')));
 app.use(express.static(path.join(__dirname, 'public')));

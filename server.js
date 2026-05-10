@@ -17,7 +17,9 @@ app.use(cors({
 app.use(express.json());
 app.use('/landing', express.static(path.join(__dirname, 'landing')));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+}));
 
 const db = initDB();
 seedDB(db);
@@ -58,22 +60,26 @@ if (db.prepare('SELECT COUNT(*) as c FROM admins').get().c === 0) {
 }
 
 
+const ALLOWED_UPLOAD_EXTS = new Set(['.jpg', '.jpeg', '.png', '.mp4']);
+
 const upload = multer({
   storage: multer.diskStorage({
-    destination: 'uploads/',
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+    destination: path.join(__dirname, 'uploads'),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const safeExt = ALLOWED_UPLOAD_EXTS.has(ext) ? ext : '';
+      cb(null, `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${safeExt}`);
+    }
   }),
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.mp4'].includes(ext)) {
+    if (ALLOWED_UPLOAD_EXTS.has(ext)) {
       cb(null, true);
     } else {
       cb(new Error('Only JPG, PNG, and MP4 files are allowed'));
     }
   },
-  limits: {
-    fileSize: 10 * 1024 * 1024
-  }
+  limits: { fileSize: 10 * 1024 * 1024 }
 });
 
 // ─── Auth helpers ────────────────────────────────

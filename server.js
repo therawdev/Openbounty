@@ -385,11 +385,19 @@ app.put('/api/settings', (req, res) => {
 });
 
 app.post('/api/submissions/:id/comments', (req, res) => {
+  const session = getSession(req);
+  if (!session) return res.status(401).json({ error: 'Unauthorized' });
   upload.array('files', 5)(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
-    const { author_type, author_name, body, is_internal } = req.body;
+    const { body } = req.body;
+    // Derive author identity from session — never trust the request body
+    const author_type = session.role === 'admin' ? 'team' : 'researcher';
+    const author_name = session.role === 'admin'
+      ? (db.prepare('SELECT name FROM admins LIMIT 1').get()?.name || 'Security Team')
+      : (session.researcher_name || session.handle || 'Researcher');
+    // Only admins may create internal notes
+    const isInt = (session.role === 'admin' && (req.body.is_internal === 'true' || req.body.is_internal === true)) ? 1 : 0;
     const filePaths = (req.files || []).map(f => `/uploads/${f.filename}`);
-    const isInt = is_internal === 'true' || is_internal === true ? 1 : 0;
     const r = db.prepare('INSERT INTO comments (submission_id,author_type,author_name,body,is_internal,files) VALUES (?,?,?,?,?,?)').run(
       req.params.id, author_type, author_name, body, isInt, JSON.stringify(filePaths)
     );

@@ -221,7 +221,7 @@ const SubmissionDetail = ({ id, onNav, onNotify, user }) => {
                         <TimeAgo date={c.created_at} />
                       </div>
                       <div className="markdown-body" style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--ink)' }}
-                           dangerouslySetInnerHTML={{ __html: window.marked ? window.marked.parse(c.body, {
+                           dangerouslySetInnerHTML={{ __html: window.DOMPurify.sanitize(window.marked ? window.marked.parse(c.body, {
                              renderer: Object.assign(new window.marked.Renderer(), {
                                link: (h, t, text) => text,
                                image: (h, t, text) => text,
@@ -231,7 +231,7 @@ const SubmissionDetail = ({ id, onNav, onNotify, user }) => {
                                html: (html) => html.replace(/</g, '&lt;'),
                                heading: (text, level) => level >= 2 && level <= 4 ? `<h${level}>${text}</h${level}>` : `<p>${text}</p>`
                              })
-                           }) : c.body }}></div>
+                           }) : c.body) }}></div>
 
                       {c.files && c.files.length > 0 && (
                         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>

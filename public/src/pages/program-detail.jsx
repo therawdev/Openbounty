@@ -125,7 +125,7 @@ const ProgramDetail = ({ id, onNav, onNotify, user }) => {
                 {editing ? (
                   <textarea className="textarea" rows={12} value={editData.policy || ''} onChange={e => setEditData({...editData, policy: e.target.value})} />
                 ) : (
-                  <div className="markdown-body" style={{ fontSize: 14, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: window.marked.parse(program.policy || 'No policy defined.') }}></div>
+                  <div className="markdown-body" style={{ fontSize: 14, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: window.DOMPurify.sanitize(window.marked.parse(program.policy || 'No policy defined.')) }}></div>
                 )}
               </div>
             </div>

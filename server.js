@@ -45,6 +45,18 @@ for (const sql of migrations) {
 // Ensure settings row 1 exists
 db.prepare(`INSERT OR IGNORE INTO settings (id) VALUES (1)`).run();
 
+// Ensure at least one admin account exists — use env vars, warn if falling back to dev default
+if (db.prepare('SELECT COUNT(*) as c FROM admins').get().c === 0) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@openbounty.io';
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    console.warn('  ⚠️  ADMIN_PASSWORD env var not set. Set it before deploying to production.');
+  }
+  db.prepare('INSERT INTO admins (name, email, password) VALUES (?, ?, ?)').run(
+    'Maya Rivera', adminEmail, hashPw(adminPassword || 'changeme-set-ADMIN_PASSWORD-env')
+  );
+}
+
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -78,12 +90,6 @@ app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   
-  if (email === 'admin@openbounty.io' && password === 'admin2026') {
-    const token = crypto.randomBytes(32).toString('hex');
-    db.prepare(`INSERT INTO sessions (token, role) VALUES (?, 'admin')`).run(token);
-    return res.json({ token, user: { id: null, handle: 'admin', name: 'Maya Rivera', email: 'admin@openbounty.io', avatar_color: '#dc2626', role: 'admin' }});
-  }
-
   const admin = db.prepare('SELECT * FROM admins WHERE email=?').get(email);
   if (admin && admin.password === hashPw(password)) {
     const token = crypto.randomBytes(32).toString('hex');
